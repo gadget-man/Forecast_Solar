@@ -22,6 +22,8 @@ from .const import (
 )
 
 RE_API_KEY = re.compile(r"^[a-zA-Z0-9]{16}$")
+RE_DAMPING = re.compile(r"/^\d*\.?\d*[,]?\d*\.?\d+?$/mg")
+
 
 
 class ForecastSolarFlowHandler(ConfigFlow, domain=DOMAIN):
@@ -129,7 +131,7 @@ class ForecastSolarOptionFlowHandler(OptionsFlow):
                     vol.Optional(
                         CONF_DAMPING,
                         default=self.config_entry.options.get(CONF_DAMPING, 0.0),
-                    ): vol.Match(r'/\d*\.?\d+[,]?\d*\.?\d+?/'),
+                    ): vol.Match(RE_DAMPING),
                     vol.Optional(
                         CONF_INVERTER_SIZE,
                         description={

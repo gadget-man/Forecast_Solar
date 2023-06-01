@@ -39,7 +39,15 @@ class ForecastSolarDataUpdateCoordinator(DataUpdateCoordinator[Estimate]):
             inverter_size := entry.options.get(CONF_INVERTER_SIZE)
         ) is not None and inverter_size > 0:
             inverter_size = inverter_size / 1000
-
+           
+        damping_list =  entry.options.get(CONF_DAMPING).split(",")
+        d_morning = 0.0
+        d_evening = 0.0
+        
+        if len(damping_list) > 1:
+            d_morning = damping_list[0]
+            d_evening = damping_list[1]
+            
         self.forecast = ForecastSolar(
             api_key=api_key,
             session=async_get_clientsession(hass),
@@ -49,6 +57,8 @@ class ForecastSolarDataUpdateCoordinator(DataUpdateCoordinator[Estimate]):
             azimuth=(entry.options[CONF_AZIMUTH] - 180),
             kwp=(entry.options[CONF_MODULES_POWER] / 1000),
             damping=entry.options.get(CONF_DAMPING, 0),
+            damping_morning = d_morning,
+            damping_evening = d_evening,
             inverter=inverter_size,
         )
 
