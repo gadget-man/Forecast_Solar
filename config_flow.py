@@ -22,7 +22,7 @@ from .const import (
 )
 
 RE_API_KEY = re.compile(r"^[a-zA-Z0-9]{16}$")
-RE_DAMPING = re.compile(r"/^\d*\.?\d*[,]?\d*\.?\d+?$/mg")
+RE_DAMPING = re.compile(r"^\d*\.?\d*[,]?\d*\.?\d+?$")
 
 
 
@@ -103,6 +103,15 @@ class ForecastSolarOptionFlowHandler(OptionsFlow):
                 return self.async_create_entry(
                     title="", data=user_input | {CONF_API_KEY: api_key or None}
                 )
+            if (damping := user_input.get(CONF_DAMPING)) and RE_DAMPING.match(
+                damping
+            ) is None:
+                errors[CONF_DAMPING] = "invalid_damping"
+            else:
+                return self.async_create_entry(
+                    title="", data=user_input | {CONF_DAMPING: damping or None}
+                )
+
 
         return self.async_show_form(
             step_id="init",
@@ -131,7 +140,7 @@ class ForecastSolarOptionFlowHandler(OptionsFlow):
                     vol.Optional(
                         CONF_DAMPING,
                         default=self.config_entry.options.get(CONF_DAMPING, 0.0),
-                    ): vol.Match(RE_DAMPING),
+                    ): str, #vol.All(vol.Match(r"^\d*\.?\d*[,]?\d*\.?\d+?$")),
                     vol.Optional(
                         CONF_INVERTER_SIZE,
                         description={

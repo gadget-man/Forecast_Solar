@@ -16,7 +16,8 @@
   },
   "options": {
     "error": {
-      "invalid_api_key": "[%key:common::config_flow::error::invalid_api_key%]"
+      "invalid_api_key": "[%key:common::config_flow::error::invalid_api_key%]",
+      "invalid_damping": "Invalid damping value. Must be either X.X, or X.X,X.X"
     },
     "step": {
       "init": {

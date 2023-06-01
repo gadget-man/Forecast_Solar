@@ -1,6 +1,8 @@
 """DataUpdateCoordinator for the Forecast.Solar integration."""
 from __future__ import annotations
 
+import logging
+
 from datetime import timedelta
 
 from forecast_solar import Estimate, ForecastSolar
@@ -21,6 +23,7 @@ from .const import (
     LOGGER,
 )
 
+_LOGGER = logging.getLogger(__name__)
 
 class ForecastSolarDataUpdateCoordinator(DataUpdateCoordinator[Estimate]):
     """The Forecast.Solar Data Update Coordinator."""
@@ -39,15 +42,24 @@ class ForecastSolarDataUpdateCoordinator(DataUpdateCoordinator[Estimate]):
             inverter_size := entry.options.get(CONF_INVERTER_SIZE)
         ) is not None and inverter_size > 0:
             inverter_size = inverter_size / 1000
-           
-        damping_list =  entry.options.get(CONF_DAMPING).split(",")
-        d_morning = 0.0
-        d_evening = 0.0
-        
-        if len(damping_list) > 1:
-            d_morning = damping_list[0]
-            d_evening = damping_list[1]
+
+        d_morning = None
+        d_evening = None
+        d_day=entry.options.get(CONF_DAMPING, 0)
+        _LOGGER.debug("CONF_DAMPING: %s", entry.options.get(CONF_DAMPING))
+
+        if entry.options.get(CONF_DAMPING) is not None:
+            damping_list =  entry.options.get(CONF_DAMPING).split(",")
+            if len(damping_list) > 1:
+                d_morning = damping_list[0]
+                d_evening = damping_list[1]
+                d_day = 0
             
+        _LOGGER.debug("d_day: %s", d_day)
+        _LOGGER.debug("d_morning: %s", d_morning)
+        _LOGGER.debug("d_evening: %s", d_evening)
+
+
         self.forecast = ForecastSolar(
             api_key=api_key,
             session=async_get_clientsession(hass),
@@ -56,7 +68,7 @@ class ForecastSolarDataUpdateCoordinator(DataUpdateCoordinator[Estimate]):
             declination=entry.options[CONF_DECLINATION],
             azimuth=(entry.options[CONF_AZIMUTH] - 180),
             kwp=(entry.options[CONF_MODULES_POWER] / 1000),
-            damping=entry.options.get(CONF_DAMPING, 0),
+            damping=d_day,
             damping_morning = d_morning,
             damping_evening = d_evening,
             inverter=inverter_size,
